@@ -70,7 +70,7 @@ def test_category_init(product_samsung, product_iphone):
 
     assert category.name == "Смартфоны"
     assert category.description == "Мобильные телефоны"
-    assert category.products == products_list
+    assert category._Category__products == products_list
 
 
 def test_category_and_product_counters(product_samsung, product_iphone, product_xiaomi):
@@ -82,3 +82,33 @@ def test_category_and_product_counters(product_samsung, product_iphone, product_
     # Проверяем сквозные счетчики классов
     assert Category.category_count == 2  # Всего создано 2 категории
     assert Category.product_count == 3  # Внутри категорий суммарно 3 товара
+
+
+def test_product_price_setter(capsys):
+    prod = Product("Тест", "Описание", 100.0, 10)
+
+    # Проверяем запрет отрицательной цены
+    prod.price = -10
+    captured = capsys.readouterr()
+    assert "Цена не должна быть нулевая или отрицательная" in captured.out
+
+
+def test_new_product_duplicate():
+    p1 = Product("Нокиа", "Старый", 1000.0, 2)
+    data = {"name": "Нокиа", "description": "Новый", "price": 1500.0, "quantity": 3}
+
+    # Вызываем слияние
+    updated = Product.new_product(data, [p1])
+
+    assert updated.quantity == 5  # 2 + 3
+    assert updated.price == 1500.0  # max(1000, 1500)
+
+
+def test_product_price_decrease(monkeypatch, capsys):
+    prod = Product("Тест", "Описание", 100.0, 10)
+
+    # Имитируем, что пользователь ввел 'y' (согласие на понижение)
+    monkeypatch.setattr('builtins.input', lambda _: 'y')
+
+    prod.price = 80.0  # Понижаем цену
+    assert prod.price == 80.0
