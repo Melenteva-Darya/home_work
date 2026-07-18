@@ -112,3 +112,52 @@ def test_product_price_decrease(monkeypatch, capsys):
 
     prod.price = 80.0  # Понижаем цену
     assert prod.price == 80.0
+
+
+def test_product_price_decrease_canceled(monkeypatch, capsys):
+    """Тест отмены понижения цены (пользователь вводит 'n')."""
+    prod = Product("Тест", "Описание", 100.0, 10)
+
+    # Имитируем, что пользователь отказался (ввел 'n')
+    monkeypatch.setattr('builtins.input', lambda _: 'n')
+
+    prod.price = 80.0  # Пытаемся понизить цену
+    captured = capsys.readouterr()
+
+    assert "Действие отменено" in captured.out
+    assert prod.price == 100.0  # Цена ДОЛЖНА остаться старой
+
+
+def test_category_add_product(product_samsung, product_xiaomi):
+    """Тест метода add_product в классе Category."""
+    category = Category("Смартфоны", "Тест", [product_samsung])
+
+    # Изначально 1 товар в категории
+    assert Category.product_count == 1
+
+    # Добавляем второй товар через метод
+    category.add_product(product_xiaomi)
+
+    # Проверяем, что счетчик увеличился, а товар внутри приватного списка
+    assert Category.product_count == 2
+    assert product_xiaomi in category._Category__products
+
+
+def test_product_str(product_samsung):
+    """Тест магического метода __str__ класса Product."""
+    # Samsung Galaxy S23 Ultra, 180000.0 руб. Остаток: 5 шт.
+    expected_str = "Samsung Galaxy S23 Ultra, 180000.0 руб. Остаток: 5 шт."
+    assert str(product_samsung) == expected_str
+
+
+def test_category_str_and_products_getter(product_samsung, product_iphone):
+    """Тест метода __str__ и геттера products класса Category."""
+    category = Category("Смартфоны", "Тест", [product_samsung, product_iphone])
+
+    # 1. Проверяем __str__ категории (суммарное количество штук: 5 + 8 = 13)
+    assert str(category) == "Смартфоны, количество продуктов: 13 шт."
+
+    # 2. Проверяем геттер строк продуктов
+    products_output = category.products
+    assert "Samsung Galaxy S23 Ultra" in products_output
+    assert "Iphone 15" in products_output
