@@ -1,45 +1,4 @@
-import pytest
-
 from src.product_classes import Category, Product
-
-# --- ФИКСТУРЫ ---
-
-
-@pytest.fixture(autouse=True)
-def reset_counters():
-    """Автоматически сбрасывает счетчики классов перед каждым тестом,
-
-    чтобы тесты были изолированными и независимыми.
-    """
-    Product.number_of_product = 0
-    Category.category_count = 0
-    Category.product_count = 0
-
-
-@pytest.fixture
-def product_samsung():
-    """Фикстура для смартфона Samsung."""
-    return Product(
-        "Samsung Galaxy S23 Ultra",
-        "256GB, Серый цвет, 200MP камера",
-        180000.0,
-        5,
-    )
-
-
-@pytest.fixture
-def product_iphone():
-    """Фикстура для смартфона iPhone."""
-    return Product("Iphone 15", "512GB, Gray space", 210000.0, 8)
-
-
-@pytest.fixture
-def product_xiaomi():
-    """Фикстура для смартфона Xiaomi."""
-    return Product("Xiaomi Redmi Note 11", "1024GB, Синий", 31000.0, 14)
-
-
-# --- ТЕСТЫ ДЛЯ КЛАССА PRODUCT ---
 
 
 def test_init(product_samsung):
@@ -108,7 +67,7 @@ def test_product_price_decrease(monkeypatch, capsys):
     prod = Product("Тест", "Описание", 100.0, 10)
 
     # Имитируем, что пользователь ввел 'y' (согласие на понижение)
-    monkeypatch.setattr('builtins.input', lambda _: 'y')
+    monkeypatch.setattr("builtins.input", lambda _: "y")
 
     prod.price = 80.0  # Понижаем цену
     assert prod.price == 80.0
@@ -119,7 +78,7 @@ def test_product_price_decrease_canceled(monkeypatch, capsys):
     prod = Product("Тест", "Описание", 100.0, 10)
 
     # Имитируем, что пользователь отказался (ввел 'n')
-    monkeypatch.setattr('builtins.input', lambda _: 'n')
+    monkeypatch.setattr("builtins.input", lambda _: "n")
 
     prod.price = 80.0  # Пытаемся понизить цену
     captured = capsys.readouterr()

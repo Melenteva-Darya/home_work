@@ -1,5 +1,6 @@
 class Product:
     """Класс для продуктов."""
+
     name: str
     description: str
     __price: float
@@ -18,15 +19,17 @@ class Product:
         """Класс-метод для создания нового товара или обновления дубликата."""
         if current_products:
             for existing_product in current_products:
-                if product_data['name'] == existing_product.name:
-                    existing_product.quantity += product_data['quantity']
-                    existing_product.price = max(existing_product.price, product_data['price'])
+                if product_data["name"] == existing_product.name:
+                    existing_product.quantity += product_data["quantity"]
+                    existing_product.price = max(
+                        existing_product.price, product_data["price"]
+                    )
                     return existing_product
         return cls(
-            name=product_data['name'],
-            description=product_data['description'],
-            price=product_data['price'],
-            quantity=product_data['quantity']
+            name=product_data["name"],
+            description=product_data["description"],
+            price=product_data["price"],
+            quantity=product_data["quantity"],
         )
 
     @property
@@ -39,7 +42,7 @@ class Product:
             print("Цена не должна быть нулевая или отрицательная")
         elif new_price < self.__price:
             user_answer = input("Вы уверены, что хотите понизить цену? (y/n): ")
-            if user_answer.lower() == 'y':
+            if user_answer.lower() == "y":
                 self.__price = new_price
             else:
                 print("Действие отменено")
@@ -47,15 +50,18 @@ class Product:
             self.__price = new_price
 
     def __str__(self) -> str:
-        return f'{self.name}, {self.price} руб. Остаток: {self.quantity} шт.'
+        return f"{self.name}, {self.price} руб. Остаток: {self.quantity} шт."
 
     def __add__(self, other):
-        result_sum = self.price * self.quantity + other.price * other.quantity
-        return result_sum
+        if type(other) is Product:
+            result_sum = self.price * self.quantity + other.price * other.quantity
+            return result_sum
+        raise TypeError
 
 
 class Category:
     """Класс для категорий товаров."""
+
     name: str
     description: str
     __products: list
@@ -70,8 +76,11 @@ class Category:
         Category.product_count += len(products)
 
     def add_product(self, product: Product):
-        self.__products.append(product)
-        Category.product_count += 1
+        if isinstance(product, Product):
+            self.__products.append(product)
+            Category.product_count += 1
+        else:
+            raise TypeError
 
     @property
     def products(self) -> str:
@@ -88,11 +97,10 @@ class Category:
 
 
 class ProductIterator:
-    # Исправили аннотацию: на входе мы ждем объект категории Category, а не list
-    category_obj: 'Category'
+    category_obj: "Category"
 
     def __init__(self, category_obj):
-        self.products = category_obj._Category__products
+        self.products = category_obj.products_list
         self.index = 0
 
     def __iter__(self):
