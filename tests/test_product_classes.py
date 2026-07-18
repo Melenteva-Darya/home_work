@@ -1,3 +1,5 @@
+import pytest
+
 from src.product_classes import Category, Product
 
 
@@ -120,3 +122,12 @@ def test_category_str_and_products_getter(product_samsung, product_iphone):
     products_output = category.products
     assert "Samsung Galaxy S23 Ultra" in products_output
     assert "Iphone 15" in products_output
+
+
+def test_add_product_type_error():
+    """Тест проверяет, что нельзя добавить объект другого типа."""
+    category = Category("Электроника", "Гаджеты", [])
+
+    # Пытаемся добавить обычную строку вместо объекта Product
+    with pytest.raises(TypeError):
+        category.add_product("Просто строка вместо продукта")
