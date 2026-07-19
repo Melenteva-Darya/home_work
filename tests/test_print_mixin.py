@@ -14,6 +14,7 @@ def test_product_print_mixin(capsys):
     assert "Тестовый товар" in captured.out
     assert "500.0" in captured.out
 
+
 def test_lawn_grass_mixin_log(capsys):
     """Проверяем, что миксин автоматически определяет имя класса-наследника LawnGrass."""
     Smartphone(
@@ -28,4 +29,7 @@ def test_lawn_grass_mixin_log(capsys):
     )
 
     captured = capsys.readouterr()
-    assert captured.out.strip() == 'Smartphone(Xiaomi Redmi Note 11, 1024GB, Синий, 31000.0, 14)'
+    assert (
+        captured.out.strip()
+        == "Smartphone(Xiaomi Redmi Note 11, 1024GB, Синий, 31000.0, 14)"
+    )

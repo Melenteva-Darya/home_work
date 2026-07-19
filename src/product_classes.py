@@ -1,6 +1,5 @@
-from src.baseabstract import BaseStorage, BaseProduct
+from src.baseabstract import BaseProduct, BaseStorage
 from src.print_mixin import PrintMixin
-
 
 
 class Product(BaseProduct, PrintMixin):
@@ -123,6 +122,7 @@ class ProductIterator:
         else:
             raise StopIteration
 
+
 class Order(BaseStorage):
     """Класс для заказа товаров."""
 
@@ -134,13 +134,15 @@ class Order(BaseStorage):
         super().__init__(name, description)
 
         if not isinstance(product, Product):
-                raise TypeError("В заказе должен быть указан товар класса Product")
+            raise TypeError("В заказе должен быть указан товар класса Product")
 
-        self.product = product          # Ссылка на купленный товар
-        self.quantity = quantity        # Количество купленного товара
+        self.product = product  # Ссылка на купленный товар
+        self.quantity = quantity  # Количество купленного товара
         # Автоматически вычисляем итоговую стоимость
         self.total_cost = self.product.price * self.quantity
 
     def __str__(self) -> str:
-        return (f"Заказ '{self.name}': {self.product.name} x {self.quantity} шт. "
-                f"Итого: {self.total_cost} руб. ({self.description})")
+        return (
+            f"Заказ '{self.name}': {self.product.name} x {self.quantity} шт. "
+            f"Итого: {self.total_cost} руб. ({self.description})"
+        )

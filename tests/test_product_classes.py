@@ -1,8 +1,6 @@
 import pytest
 
-from src.product_classes import Category
-from src.product_classes import Product
-from src.product_classes import BaseProduct
+from src.product_classes import BaseProduct, Category, Product
 
 
 def test_init(product_samsung):

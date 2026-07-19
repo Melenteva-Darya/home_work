@@ -1,5 +1,4 @@
-from src.product_classes import Product
-from src.product_classes import Category
+from src.product_classes import Category, Product
 
 if __name__ == "__main__":
     product1 = Product(
