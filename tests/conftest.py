@@ -80,21 +80,6 @@ def smartphone2():
 
 
 @pytest.fixture
-def smartphone3():
-    """Фикстура для модуля "Cмартфон" Xiaomi Redmi Note 11."""
-    return Smartphone(
-        "Xiaomi Redmi Note 11",
-        "1024GB, Синий",
-        31000.0,
-        14,
-        90.3,
-        "Note 11",
-        1024,
-        "Синий",
-    )
-
-
-@pytest.fixture
 def lawngrass_1():
     """Фикстура для модуля "Трава газонная" Газонная трава 1."""
     return LawnGrass(
