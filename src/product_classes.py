@@ -1,4 +1,8 @@
-class Product:
+from src.baseabstract import BaseProduct, BaseStorage
+from src.print_mixin import PrintMixin
+
+
+class Product(BaseProduct, PrintMixin):
     """Класс для продуктов."""
 
     name: str
@@ -13,6 +17,7 @@ class Product:
         self.__price = price
         self.quantity = quantity
         Product.number_of_product += 1
+        super().__init__()
 
     @classmethod
     def new_product(cls, product_data, current_products=None):
@@ -59,7 +64,7 @@ class Product:
         raise TypeError
 
 
-class Category:
+class Category(BaseStorage):
     """Класс для категорий товаров."""
 
     name: str
@@ -69,8 +74,7 @@ class Category:
     product_count = 0
 
     def __init__(self, name, description, products):
-        self.name = name
-        self.description = description
+        super().__init__(name, description)
         self.__products = products
         Category.category_count += 1
         Category.product_count += len(products)
@@ -117,3 +121,28 @@ class ProductIterator:
             return product
         else:
             raise StopIteration
+
+
+class Order(BaseStorage):
+    """Класс для заказа товаров."""
+
+    __products: list
+    category_count = 0
+    product_count = 0
+
+    def __init__(self, name: str, description: str, product: Product, quantity: int):
+        super().__init__(name, description)
+
+        if not isinstance(product, Product):
+            raise TypeError("В заказе должен быть указан товар класса Product")
+
+        self.product = product  # Ссылка на купленный товар
+        self.quantity = quantity  # Количество купленного товара
+        # Автоматически вычисляем итоговую стоимость
+        self.total_cost = self.product.price * self.quantity
+
+    def __str__(self) -> str:
+        return (
+            f"Заказ '{self.name}': {self.product.name} x {self.quantity} шт. "
+            f"Итого: {self.total_cost} руб. ({self.description})"
+        )

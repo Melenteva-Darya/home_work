@@ -1,6 +1,6 @@
 import pytest
 
-from src.product_classes import Category, Product
+from src.product_classes import BaseProduct, Category, Product
 
 
 def test_init(product_samsung):
@@ -131,3 +131,21 @@ def test_add_product_type_error():
     # Пытаемся добавить обычную строку вместо объекта Product
     with pytest.raises(TypeError):
         category.add_product("Просто строка вместо продукта")
+
+
+def test_base_product_instantiation_error():
+    """Проверяем, что нельзя создать объект абстрактного класса напрямую."""
+    with pytest.raises(TypeError):
+        BaseProduct()  # type: ignore[abstract]
+
+
+def test_empty_subclass_is_forbidden():
+    """Тест проверяет, что незавершенный наследник вызовет ошибку."""
+
+    # noinspection PyAbstractClass
+    class FakeProduct(BaseProduct):  # type: ignore[abstract]
+        pass
+
+    # Пытаемся создать объект пустого класса — вот тут Python выдаст TypeError!
+    with pytest.raises(TypeError):
+        FakeProduct()  # type: ignore[abstract]
