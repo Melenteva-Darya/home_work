@@ -1,4 +1,5 @@
 from src.baseabstract import BaseProduct, BaseStorage
+from src.exception import ZeroQuantity
 from src.print_mixin import PrintMixin
 
 
@@ -16,6 +17,7 @@ class Product(BaseProduct, PrintMixin):
         self.description = description
         self.__price = price
         self.quantity = quantity
+
         Product.number_of_product += 1
         super().__init__()
 
@@ -81,8 +83,22 @@ class Category(BaseStorage):
 
     def add_product(self, product: Product):
         if isinstance(product, Product):
-            self.__products.append(product)
-            Category.product_count += 1
+            try:
+                if product.quantity <= 0:
+                    raise ZeroQuantity(
+                        "Попытка добавить товар с нулевым или отрицательным количеством"
+                    )
+            except ZeroQuantity as e:
+                # Выводит соответствующее сообщение при вызове исключения
+                print(f"Ошибка: {e}")
+            else:
+                # В случае успешного добавления товара выводит сообщение, что товар добавлен
+                self.__products.append(product)
+                Category.product_count += 1
+                print("Товар добавлен успешно")
+            finally:
+                # При любом исходе выводит сообщение, что обработка завершена
+                print("Обработка добавления товара завершена")
         else:
             raise TypeError
 
@@ -93,11 +109,27 @@ class Category(BaseStorage):
             result += f"{str(prod)}\n"
         return result
 
+    @property
+    def products_list(self) -> list:
+        return self.__products
+
     def __str__(self) -> str:
         total_quantity = 0
         for prod in self.__products:
             total_quantity += prod.quantity
         return f"{self.name}, количество продуктов: {total_quantity} шт."
+
+    def middle_price(self):
+        """Подсчитывает среднюю стоимость всех товаров в категории."""
+        try:
+            total_cost = sum(
+                product.price * product.quantity for product in self.__products
+            )
+            total_quantity = sum(product.quantity for product in self.__products)
+            return total_cost / total_quantity
+
+        except ZeroDivisionError:
+            return 0
 
 
 class ProductIterator:
@@ -135,6 +167,27 @@ class Order(BaseStorage):
 
         if not isinstance(product, Product):
             raise TypeError("В заказе должен быть указан товар класса Product")
+        try:
+            # Проверяем количество заказываемого товара
+            if quantity <= 0:
+                raise ZeroQuantity(
+                    "Заказ не может содержать 0 или меньше единиц товара"
+                )
+        except ZeroQuantity as e:
+            # Выводит соответствующее сообщение при вызове исключения
+            print(f"Ошибка оформления заказа: {e}")
+            self.product = None
+            self.quantity = 0
+            self.total_cost = 0
+        else:
+            # В случае успешного добавления товара выводит сообщение, что товар добавлен
+            self.product = product
+            self.quantity = quantity
+            self.total_cost = self.product.price * self.quantity
+            print("Товар добавлен в заказ успешно")
+        finally:
+            # При любом исходе выводит сообщение, что обработка завершена
+            print("Обработка добавления товара завершена")
 
         self.product = product  # Ссылка на купленный товар
         self.quantity = quantity  # Количество купленного товара
@@ -142,6 +195,9 @@ class Order(BaseStorage):
         self.total_cost = self.product.price * self.quantity
 
     def __str__(self) -> str:
+        if self.product is None:
+            return f"Заказ '{self.name}': пустой или некорректный заказ ({self.description})"
+
         return (
             f"Заказ '{self.name}': {self.product.name} x {self.quantity} шт. "
             f"Итого: {self.total_cost} руб. ({self.description})"
