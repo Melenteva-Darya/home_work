@@ -1,8 +1,6 @@
-from src.baseabstract import BaseProduct
-from src.baseabstract import BaseStorage
-
-from src.print_mixin import PrintMixin
+from src.baseabstract import BaseProduct, BaseStorage
 from src.exception import ZeroQuantity
+from src.print_mixin import PrintMixin
 
 
 class Product(BaseProduct, PrintMixin):
@@ -22,7 +20,6 @@ class Product(BaseProduct, PrintMixin):
 
         Product.number_of_product += 1
         super().__init__()
-
 
     @classmethod
     def new_product(cls, product_data, current_products=None):
@@ -88,7 +85,9 @@ class Category(BaseStorage):
         if isinstance(product, Product):
             try:
                 if product.quantity <= 0:
-                    raise ZeroQuantity("Попытка добавить товар с нулевым или отрицательным количеством")
+                    raise ZeroQuantity(
+                        "Попытка добавить товар с нулевым или отрицательным количеством"
+                    )
             except ZeroQuantity as e:
                 # Выводит соответствующее сообщение при вызове исключения
                 print(f"Ошибка: {e}")
@@ -114,7 +113,6 @@ class Category(BaseStorage):
     def products_list(self) -> list:
         return self.__products
 
-
     def __str__(self) -> str:
         total_quantity = 0
         for prod in self.__products:
@@ -124,7 +122,9 @@ class Category(BaseStorage):
     def middle_price(self):
         """Подсчитывает среднюю стоимость всех товаров в категории."""
         try:
-            total_cost = sum(product.price * product.quantity for product in self.__products)
+            total_cost = sum(
+                product.price * product.quantity for product in self.__products
+            )
             total_quantity = sum(product.quantity for product in self.__products)
             return total_cost / total_quantity
 
@@ -170,7 +170,9 @@ class Order(BaseStorage):
         try:
             # Проверяем количество заказываемого товара
             if quantity <= 0:
-                raise ZeroQuantity("Заказ не может содержать 0 или меньше единиц товара")
+                raise ZeroQuantity(
+                    "Заказ не может содержать 0 или меньше единиц товара"
+                )
         except ZeroQuantity as e:
             # Выводит соответствующее сообщение при вызове исключения
             print(f"Ошибка оформления заказа: {e}")
@@ -193,6 +195,9 @@ class Order(BaseStorage):
         self.total_cost = self.product.price * self.quantity
 
     def __str__(self) -> str:
+        if self.product is None:
+            return f"Заказ '{self.name}': пустой или некорректный заказ ({self.description})"
+
         return (
             f"Заказ '{self.name}': {self.product.name} x {self.quantity} шт. "
             f"Итого: {self.total_cost} руб. ({self.description})"

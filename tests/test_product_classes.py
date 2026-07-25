@@ -1,6 +1,8 @@
+from typing import cast
+
 import pytest
 
-from src.product_classes import BaseProduct, Category, Product
+from src.product_classes import BaseProduct, Category, Order, Product
 
 
 def test_init(product_samsung):
@@ -124,13 +126,15 @@ def test_category_str_and_products_getter(product_samsung, product_iphone):
     assert "Iphone 15" in products_output
 
 
-def test_add_product_type_error():
-    """Тест проверяет, что нельзя добавить объект другого типа."""
-    category = Category("Электроника", "Гаджеты", [])
+def test_add_product_wrong_type() -> None:
+    """Тест проверяет, что при передаче строки вместо продукта вызывается TypeError."""
+    category = Category("Смартфоны", "Категория смартфонов", [])
 
-    # Пытаемся добавить обычную строку вместо объекта Product
+    # Оборачиваем вызов метода, чтобы pytest знал, что мы ждем ошибку TypeError
     with pytest.raises(TypeError):
-        category.add_product("Просто строка вместо продукта")
+        # cast обманывает mypy/PyCharm, чтобы они не ругались на тип аргумента
+        fake_product = cast(Product, "Просто строка вместо продукта")
+        category.add_product(fake_product)
 
 
 def test_base_product_instantiation_error():
@@ -149,3 +153,56 @@ def test_empty_subclass_is_forbidden():
     # Пытаемся создать объект пустого класса — вот тут Python выдаст TypeError!
     with pytest.raises(TypeError):
         FakeProduct()  # type: ignore[abstract]
+
+
+def test_add_product_zero_quantity(capsys):
+    """Тест: Проверяет логику try-except-else-finally при добавлении некорректного товара в Категорию."""
+    product1 = Product("Samsung Galaxy S23 Ultra", "256GB, Серый", 180000.0, 5)
+    category = Category("Смартфоны", "Категория смартфонов", [product1])
+
+    # Сначала сбросим буфер вывода, чтобы убрать принты от создания миксинов
+    capsys.readouterr()
+
+    # Создаем товар с нулевым количеством
+    bad_product = Product("Бракованный товар", "Неверное количество", 1000.0, 0)
+
+    # Вызываем метод, где отрабатывает try-except-else-finally
+    category.add_product(bad_product)
+
+    # Перехватываем то, что напечатал метод add_product
+    captured = capsys.readouterr()
+
+    # Проверяем, что в консоли появились нужные строки из блоков except и finally
+    assert (
+        "Попытка добавить товар с нулевым или отрицательным количеством" in captured.out
+    )
+    assert "Обработка добавления товара завершена" in captured.out
+
+
+def test_add_product_success(capsys):
+    """Тест: Проверяет логику успешного добавления товара (блок else и finally)."""
+    product1 = Product("Samsung Galaxy S23 Ultra", "256GB, Серый", 180000.0, 5)
+    category = Category("Смартфоны", "Категория смартфонов", [])
+
+    capsys.readouterr()  # Очищаем старые принты
+    category.add_product(product1)
+
+    captured = capsys.readouterr()
+    # Проверяем строки из блоков else и finally
+    assert "Товар добавлен успешно" in captured.out
+    assert "Обработка добавления товара завершена" in captured.out
+
+
+def test_order_zero_quantity_exception(capsys):
+    """Тест: Проверяет логику try-except-finally при создании некорректного заказа."""
+    product = Product("Samsung Galaxy S23 Ultra", "256GB", 180000.0, 5)
+
+    capsys.readouterr()  # Очищаем принты миксинов
+
+    # Создаем заказ с количеством 0
+    Order("Новый заказ", "Покупка", product, 0)
+
+    captured = capsys.readouterr()
+    # Проверяем строки из блоков except и finally в Order
+    assert "Заказ не может содержать 0 или меньше единиц товара" in captured.out
+    assert "Обработка добавления товара завершена" in captured.out
